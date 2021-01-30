@@ -112,4 +112,4 @@ lcu = lcuconnector.connect(
 # lcu_api.help(lcu)
 # lcu_api.get_current_summoner(lcu, target="summonerId")
 # lcu_api.get_current_summoner_jwt(lcu)
-print(lcu_api.get_current_summoner_background_skin_id(lcu))
+# lcu_api.get_current_summoner_background_skin_id(lcu)

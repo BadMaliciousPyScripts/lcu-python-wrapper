@@ -48,11 +48,13 @@ class lcu_api:
         request_json = request.json()
         if p == True:
             xtra.jprint(request_json)
+        return request_json
 
     def get_current_summoner(lcu_data, p=False, target=False):
-        target_ok = ["accountId", "displayName", "internalName", "nameChangeFlag"
-                     "levelPercentNext", "profileIconId", "puuid", "rerollPoints",
-                     ]
+        target_ok = ["levelPercentNext", "accountId", "displayName", "internalName",
+                     "nameChangeFlag", "profileIconId", "puuid", "rerollPoints",
+                     "summonerId", "summonerLevel", "unnamed", "xpSinceLastLevel",
+                     "xpUntilNextLevel"]
         auth = xtra.base64encode(lcu_data["auth"])
         headers = {
             "Accept": "application/json",
@@ -63,7 +65,37 @@ class lcu_api:
         request_json = request.json()
         if p == True:
             xtra.jprint(request_json)
+        if target != False and target in target_ok:
+            if target == "levelPercentNext":
+                return request_json["percentCompleteForNextLevel"]
+            return request_json[target]
+        elif target != False and target not in target_ok:
+            return F"Target was wrongly specified: {target}"
         return request_json
+
+    def get_current_summoner_jwt(lcu_data, p=False):
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        url = lcu_data["url"] + "/lol-summoner/v1/current-summoner/jwt"
+        request = requests.get(url, headers=headers, verify=False)
+        if p == True:
+            print(request.text.strip('"'))
+        return request.text.strip('"')
+
+    def get_current_summoner_background_skin_id(lcu_data):
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        url = lcu_data["url"] + "/lol-summoner/v1/current-summoner/summoner-profile"
+        request = requests.get(url, headers=headers, verify=False)
+        return request.json()["backgroundSkinId"]
+
+
 
 class xtra:
     def base64encode(text):
@@ -76,5 +108,8 @@ class xtra:
 lcu = lcuconnector.connect(
         "D:\\Riot Games\\League of Legends\\lockfile"
       )
+
 # lcu_api.help(lcu)
-# lcu_api.get_current_summoner(lcu)
+# lcu_api.get_current_summoner(lcu, target="summonerId")
+# lcu_api.get_current_summoner_jwt(lcu)
+print(lcu_api.get_current_summoner_background_skin_id(lcu))

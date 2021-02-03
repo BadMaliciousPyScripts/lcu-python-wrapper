@@ -17,16 +17,15 @@ class lcuconnector:
         if lcuconnector.check_exist(lockfile_path):
             return lcuconnector.readFile(lockfile_path)
         else:
-            return "Couldn't read lockfile!\nThis could mean that either the \
-            path is not the right or the League Client is not opened!"
+            raise Exception("Couldn't read lockfile!\nThis could mean that either the \
+path is not the right or the League Client is not opened!")
 
     def check_exist(lockfile_path):
         return os.path.exists(lockfile_path)
 
     def readFile(lockfile_path):
         lockfile = open(lockfile_path, "r")
-        data = lockfile.read()
-        data = data.split(":")
+        data = lockfile.read().split(":")
         data_dict = {
             "port": data[2],
             "url": "https://127.0.0.1:{}".format(data[2]),
@@ -184,6 +183,51 @@ class lcu_api:
             champ_and_names[(x["summonerName"])] = xtra.get_champion_name_by_id(x["championId"])
         return champ_and_names
 
+    def get_current_summoner_in_queue(lcu_data, rc=False):
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        url = lcu_data["url"] + "/lol-matchmaking/v1/ready-check"
+        request = requests.get(url, headers=headers, verify=False)
+        request_json = request.json()
+        if "state" in request_json:
+            if request_json["state"] == "Invalid":
+                return True
+            elif request_json["state"] == "InProgress":
+                if rc == True:
+                    return 2
+                return True
+        elif request_json["httpStatus"] == 404:
+            return False
+
+    def get_current_summoner_ready_check(lcu_data, rc=False):
+        is_in_q = lcu_api.get_current_summoner_in_queue(lcu_data,True)
+        if is_in_q == 2:
+            return True
+        if is_in_q == True and is_in_q != 2 and rc == True:
+            return 2
+        return False
+
+    def auto_accept_current_ready_check(lcu_data):
+        ready_check = lcu_api.get_current_summoner_ready_check(lcu_data,True)
+        if ready_check == True:
+            auth = xtra.base64encode(lcu_data["auth"])
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": F"Basic {auth}"
+            }
+            url = lcu_data["url"] + "/lol-matchmaking/v1/ready-check/accept"
+            requests.post(url, headers=headers, verify=False)
+            return "Accepted!"
+        elif ready_check == 2:
+            return "Waiting for ready check..."
+        else:
+            return "Not in queue!"
+
+
 class xtra:
     def get_champion_name_by_id(id):
         version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
@@ -214,19 +258,3 @@ class xtra:
 
     def jprint(json_parsed):
         print(json.dumps(json_parsed, indent=4, sort_keys=True))
-
-lcu = lcuconnector.connect(
-        "D:\\Riot Games\\League of Legends\\lockfile"
-      )
-
-# lcu_api.help(lcu)
-# lcu_api.get_current_summoner(lcu) # returns either json code or a string if a target got defined
-# lcu_api.get_current_summoner_jwt(lcu) # returns a javascript web token (long string)
-# lcu_api.get_current_summoner_background_skin_id(lcu) # returns the id of the current background
-# lcu_api.get_account_verified(lcu) # returns either True or False for is or is not verified
-# lcu_api.get_current_summoner_recently_played_champions_raw(lcu) # returns json info about the recently played champs
-# lcu_api.get_current_summoner_recently_played_champions_ids(lcu) # returns recently played champion ids as list
-# lcu_api.get_current_summoner_recently_played_champions_names(lcu) # returns recently played champion names as list
-# lcu_api.get_recently_played_with_summoners_raw(lcu) # returns json with infos about last played with summoners
-# lcu_api.get_recently_played_with_summoners_name(lcu) # returns recently played with summoner names as list
-# lcu_api.get_recently_played_with_summoners_name_champ(lcu) # returns recently played with summoner names and champion they played as dict 

@@ -52,3 +52,12 @@ auto_accept_current_ready_check(lcu_data) # post the command to accept request i
 create_game_lobby_ranked(lcu_data, role1, role2)
 change_roles(lcu_data, role1, role2)
 ```
+
+# Getting started:
+Get the lcu_data dictionary
+```
+from lcu_aio import lcuconnector, lcu_api
+
+lcu_data = lcuconnector.connect(path_to_lockfile)
+```
+You can leave this blank if the leagueclient executable is here located: C:\Riot Games\League of Legends\lockfile

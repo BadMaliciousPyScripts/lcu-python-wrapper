@@ -6,7 +6,8 @@ Following functions are already implemented:
 
 lcu_data means u have to put in the lcu data dictionary what comes from calling lcuconnector.connect(lockfilepath)
 
-target is for the get_current_summoner function following targets are valid and probably even used:
+target is for the get_current_summoner function
+# Valid targets:
 ```
 levelPercentNext = percent to next level up
 accountId = current user account id
@@ -30,6 +31,8 @@ BOTTOM
 ULTILITY
 FILL
 ```
+
+# Current functions:
 
 ```python
 help(lcu_data)

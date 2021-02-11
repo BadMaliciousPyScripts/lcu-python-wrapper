@@ -90,6 +90,18 @@ class lcu_api:
         request = requests.get(url, headers=headers, verify=False)
         return request.json()["backgroundSkinId"]
 
+    def post_current_summoner_background_skin(lcu_data, id: int):
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        data = '{{"key": "backgroundSkinId", "value": {0}}}'.format(id)
+        url = lcu_data["url"] + "/lol-summoner/v1/current-summoner/summoner-profile"
+        request = requests.post(url, headers=headers, data=data, verify=False)
+        return request.status_code
+
     def get_account_verified(lcu_data):
         auth = xtra.base64encode(lcu_data["auth"])
         headers = {
@@ -227,6 +239,46 @@ class lcu_api:
         else:
             return "Not in queue!"
 
+    def create_game_lobby_normal(lcu_data):
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        data = '{"queueId":430}'
+        url = lcu_data["url"] + "/lol-lobby/v2/lobby/"
+        requests.post(url, headers=headers, data=data, verify=False)
+
+    def create_game_lobby_ranked(lcu_data, r1=None, r2=None):
+        valid_roles = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "ULTILITY", "FILL", None]
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        data = '{"queueId":420}'
+        url = lcu_data["url"] + "/lol-lobby/v2/lobby/"
+        request = requests.post(url, headers=headers, data=data, verify=False)
+        if r1.upper() in valid_roles and r2.upper() in valid_roles:
+            if r1 != None and r2 != None:
+                lcu_api.change_roles(lcu_data, r1, r2)
+            elif r1 == None and r2 != None or r1 != None and r2 == None:
+                raise ValueError("Please specify 2 roles.")
+        else:
+            raise ValueError("Roles has to be TOP, JUNGLE, MIDDLE, BOTTOM, ULTILITY or FILL")
+
+    def change_roles(lcu_data, r1, r2):
+        auth = xtra.base64encode(lcu_data["auth"])
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": F"Basic {auth}"
+        }
+        data = '{{"firstPreference": "{}", "secondPreference": "{}"}}'.format(r1.upper(), r2.upper())
+        url = lcu_data["url"] + "/lol-lobby/v2/lobby/members/localMember/position-preferences"
+        requests.put(url, headers=headers, data=data, verify=False)
 
 class xtra:
     def get_champion_name_by_id(id):

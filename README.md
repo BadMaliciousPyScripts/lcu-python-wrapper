@@ -60,4 +60,4 @@ from lcu_aio import lcuconnector, lcu_api
 
 lcu_data = lcuconnector.connect(path_to_lockfile)
 ```
-You can leave this blank if the leagueclient executable is here located: C:\Riot Games\League of Legends\lockfile
+You can leave this blank if the leagueclient executable is located here: C:\Riot Games\League of Legends\lockfile
